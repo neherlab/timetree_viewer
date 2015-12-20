@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>TreeView</title>
+
+    <!-- Customized Bootstrap + Font Awesome -->
+    <link href="css/style.css" rel="stylesheet" media="screen">
+
+</head>
+
+<body>
+    <div class="container">
+    <div class="hugespacer"></div>
+        <div class="navtitle">
+            <span class="c2">TreeView</span>
+        </div>
+        <div class="container">
+
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="bigspacer"></div>
+                    <div class="subtitle-container note">
+                        javascript tree viewer
+                    </div>
+                    <div class="spacer"></div>
+                    <div class="row">
+                        <div class="col-xs-6 io-container">
+                            <div>
+                                <svg id="date-input"></svg>
+                            </div>
+                            <input id="treefile" type="file" name="treefile">
+                            <div class="form-group">
+                                <label class="col-xs-4 control-label"></label>
+                                <input type="checkbox" id="timetree" value="timetree"> timetree<br>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-xs-8 controls">
+                                    <input id="gt-color" type="search" placeholder= "Position..."  class="form-control">
+                                </div>
+                            </div>
+                        </form>
+                        <div class="bigspacer"></div>
+                        <div id="search"></div>
+                        <div class="bigspacer"></div>
+                        <div>
+                            <button id="reset" class="btn btn-default">reset layout</button>
+                        </div>
+                        <div class="bigspacer"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="treeplot-container">
+                    <svg id="treeplot"></svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3"></div>
+            <div class="col-md-9">
+                <hr>
+                <div class="center text-gray smallnote">
+                    &copy; 2015 Pavel Sagulenko and Richard Neher
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="bigspacer"></div>
+            </div>
+        </div>
+
+        <script src="js/third_party/d3.min.js"></script>
+        <script src="js/third_party/d3.tip.js"></script>
+        <script src="js/third_party/autocomplete.js"></script>
+
+        <script type="text/javascript">
+
+            var genericDomain = [0,0.111,0.222,0.333, 0.444, 0.555, 0.666, 0.777, 0.888, 1.0];
+            var colors =    ["#4D92BF", "#5AA5A8", "#6BB18D", "#80B974", "#98BD5E", "#B1BD4E",
+                             "#C8B944", "#DAAC3D", "#E59738", "#E67732", "#E14F2A", "#DB2522"];
+
+            var tip_labels = true, branch_labels=false;
+
+            function treePlotHeight(width) {return 400 + 0.30*width;}
+            var containerWidth = parseInt(d3.select(".treeplot-container").style("width"), 10);
+            var treeWidth = containerWidth;
+            var treeHeight = treePlotHeight(treeWidth);
+            var treeplot = d3.select("#treeplot")
+                .attr("width", treeWidth)
+                .attr("height", treeHeight);
+
+            var legend = d3.select("#legend")
+                .attr("width", 280)
+                .attr("height", 100);
+
+            treeplot.left_margin = 10;
+            treeplot.bottom_margin = 16;
+            treeplot.top_margin = 32;
+            if (branch_labels) {treeplot.top_margin +=15;}
+            treeplot.right_margin = 10;
+        </script>
+
+        <script src="js/tooltips.js"></script>
+        <script src="js/date.js"></script>
+        <script src="js/tree_functions.js"></script>
+        <script src="js/tree.js"></script>
+
+    </div>
+
+</body>
+
+</html>

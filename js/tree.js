@@ -1,19 +1,14 @@
 console.log('Enter tree.js');
 
-function adjust_freq_by_date() {
-    calcTipCounts(rootNode);
-    var tipCount = rootNode.tipCount;
-    nDisplayTips = displayRoot.tipCount;
-    console.log("Total tipcount: " + tipCount);
-    nodes.forEach(function (d) {
-        d.frequency = (d.tipCount)/tipCount;
-    });
+function numDate(date){
+    var oneYear = 365.25*24*60*60*1000; // days*hours*minutes*seconds*milliseconds
+    return 1970 + date.getTime()/oneYear;
 }
 
 function setNodeState(start, end){
+    var numStart = numDate(start), numEnd = numDate(end);
     tips.forEach(function (d) {
-        var date = new Date(d.date);
-        if (date >= start && date < end){
+        if (d._numDate >= numStart && d._numDate < numEnd){
             d.current  = true;
         } else{
             d.current = false;
@@ -21,47 +16,6 @@ function setNodeState(start, end){
     });
 };
 
-function initColorDomain(attr, tmpCS){
-    //var vals = tips.filter(function(d) {return tipVisibility(d)=='visible';}).map(function(d) {return d[attr];});
-    var vals = tips.map(function(d) {return d[attr];});
-    var minval = d3.min(vals);
-    var maxval = d3.max(vals);
-    var rangeIndex = Math.min(10, maxval - minval + 1);
-    var domain = [];
-    if (maxval-minval<20)
-    {
-        for (var i=maxval - rangeIndex + 1; i<=maxval; i+=1){domain.push(i);}
-    }else{
-        for (var i=1.0*minval; i<=maxval; i+=(maxval-minval)/9.0){domain.push(i);}
-    }
-    tmpCS.range(colors[rangeIndex]);
-    tmpCS.domain(domain);
-}
-
-function branchPoints(d) {
-    var tmp =   d.source.x.toString() + "," + d.target.y.toString() + " "
-              + d.target.x.toString() + "," + d.target.y.toString();
-    if (typeof d.target.children != "undefined"){
-        var child_ys = d.target.children.map(function (x){return x.y;});
-        tmp+= " "+ d.target.x.toString()+","+d3.min(child_ys).toString() + " "
-                 + d.target.x.toString()+","+d3.max(child_ys).toString();
-    }
-    return tmp;
-}
-
-function yearPoints(d) {
-    return  d.x1.toString()+","+top_margin.toString()+" "+d.x2.toString()+","+(treeHeight-bottom_margin).toString();
-}
-
-function tipVisibility(d) {
-    return d.current?"visible":"hidden";
-}
-
-
-function branchStrokeWidth(d) {
-    return 3;
-    //return freqScale(d.target.frequency);
-}
 
 function branchLabelText(d) {
     var tmp_str = d.aa_muts.replace(/,/g, ', ');
@@ -91,39 +45,34 @@ function branchLabelSize(d, n) {
     }
 }
 
-function branchStrokeColor(d) {
-    var col;
-    col = "#AAA";
-    var modCol = d3.interpolateRgb(col, "#BBB")(0.3);
-    return d3.rgb(modCol).toString();
-}
-
-
 function tipLabelSize(d, n) {
-    if (n<25){
-        return 16;
-    }else if (n<50){
-        return 12;
-    }else if (n<75){
-        return 8;
-    }
-    else {
+    if (d.current){
+        if (n<25){
+            return 16;
+        }else if (n<50){
+            return 12;
+        }else if (n<75){
+            return 8;
+        }
+        else {
+            return 0;
+        }
+    }else{
         return 0;
     }
 }
 
-function tipLabelWidth(d, n) {
-    return tipLabelText(d).length * tipLabelSize(d, n) * 0.5;
-}
-function tipFillColor(d) {
-    var col = '#BBB';   ;
-    return d3.rgb(col).brighter([0.65]).toString();
-}
-function tipStrokeColor(d) {
-    var col = '#BBB';
-    return d3.rgb(col).toString();
-}
+function tipLabelWidth(d, n){return tipLabelText(d).length * tipLabelSize(d, n) * 0.5;}
+function tipFillColor(d)    {return d3.rgb(d.col).brighter([0.65]);}
+function tipStrokeColor(d)  {return d.col;}
+function tipRadius(d)  {return 4.0;}
+function branchStrokeColor(d) {return "#BBBBBB";}
+function tipVisibility(d) { return d.current?"visible":"hidden";}
+function branchStrokeWidth(d) {return 3;}
 
+var colorScale = d3.scale.linear().clamp([true])
+    .domain(genericDomain)
+    .range(colors);
 
 function PhyloTree(root, canvas, container) {
     var tree = d3.layout.tree();
@@ -134,6 +83,11 @@ function PhyloTree(root, canvas, container) {
     var xValues, yValues, currentXValues, xScale, yScale;
     var rootNode = nodes[0];
     var nDisplayTips, displayRoot=rootNode;
+
+    var containerWidth = parseInt(container.style("width"), 10);
+    var treeWidth = containerWidth;
+    var treeHeight = treePlotHeight(treeWidth);
+
     displayRoot = rootNode;
     tips = gatherTips(rootNode, []);
     this.tips = tips;
@@ -142,7 +96,10 @@ function PhyloTree(root, canvas, container) {
     var dateValues = nodes.filter(function(d) {
         return typeof d.date === 'string';
         }).map(function(d) {
-        return new Date(d.date);
+            d._calDate = new Date(d.date);
+            d._numDate = numDate(d._calDate);
+            d.coloring = d._numDate;
+        return d._calDate;
     });
     this.earliestDate = new Date(d3.min(dateValues));
     this.latestDate = new Date(d3.max(dateValues));
@@ -183,6 +140,16 @@ function PhyloTree(root, canvas, container) {
             .attr("id", function(d) { return (d.strain).replace(/\//g, ""); });
 
     }
+    function branchPoints(d) {
+        var tmp =   d.source.x.toString() + "," + d.target.y.toString() + " "
+                  + d.target.x.toString() + "," + d.target.y.toString();
+        if (typeof d.target.children != "undefined"){
+            var child_ys = d.target.children.map(function (x){return x.y;});
+            tmp+= " "+ d.target.x.toString()+","+d3.min(child_ys).toString() + " "
+                     + d.target.x.toString()+","+d3.max(child_ys).toString();
+        }
+        return tmp;
+    }
 
     function addBranchLabels(){
         canvas.selectAll(".branchLabel")
@@ -203,9 +170,14 @@ function PhyloTree(root, canvas, container) {
     }
 
     /*
-     * update color and stroke styles of tips and links
+     * _update color and stroke styles of tips and links
     */
-    function updateStyle(){
+    function _updateStyle(){
+        var tmp_col_data = tips.map(function(d){return d.coloring;});
+        var cmin = d3.min(tmp_col_data), cmax = d3.max(tmp_col_data);
+        colorScale.domain(genericDomain.map(function (d){return cmin + d*(cmax-cmin);}));
+        tips.forEach(function(d){d.col = colorScale(d.coloring);});
+
         canvas.selectAll(".tip")
             .attr("r", tipRadius)
             .style("visibility", tipVisibility)
@@ -218,13 +190,19 @@ function PhyloTree(root, canvas, container) {
             .style("stroke-linejoin", "round")
             .style("cursor", "pointer");
     }
-    this.UpdateStyle = updateStyle;
+    this.updateStyle = _updateStyle;
+
+    function _updateVisibility(){
+        canvas.selectAll(".tip")
+            .style("visibility", tipVisibility);
+    }
+    this.updateVisibility = _updateVisibility;
 
     /*
-     * update tip labels, branch labels
+     * _update tip labels, branch labels
      */
-    function updateAnnotations(){
-        console.log("update annotations "+nDisplayTips);
+    function _updateAnnotations(){
+        console.log("_update annotations "+nDisplayTips);
         canvas.selectAll(".branchLabel")
             .style("font-size", function (d){branchLabelSize(d, nDisplayTips);})
             .style("text-anchor", "end");
@@ -233,12 +211,12 @@ function PhyloTree(root, canvas, container) {
             .style("font-size", function(d) {
                 return tipLabelSize(d, nDisplayTips)+"px"; });
     }
-    this.UpdateAnnotations = updateAnnotations;
+    this.updateAnnotations = _updateAnnotations;
 
     /*
      * add tool tips and zoom properties to svg elements
      */
-    function updateBehavior(){
+    function _updateBehavior(){
         canvas.selectAll(".link")
             .on('mouseover', function (d){
                 linkTooltip.show(d.target, this);})
@@ -255,6 +233,10 @@ function PhyloTree(root, canvas, container) {
 
 
     var yearTicks = [], monthTicks=[];
+    function gridLine(d) {
+        return  d.x1.toString()+","+canvas.top_margin.toString()+" "+d.x2.toString()
+                +","+(treeHeight-canvas.bottom_margin).toString();
+    }
     function drawGrid(){
         var maxy = yScale.domain[1], miny=yScale.domain[0];
         var maxt = d3.max(tValues), mint = d3.min(tValues);
@@ -300,7 +282,7 @@ function PhyloTree(root, canvas, container) {
      *move all svg items to their new location
      *dt -- the duration of the transition
      */
-    function updateGeometry(dt){
+    function _updateGeometry(dt){
         if (timetree){
             nodes.forEach(function (d) {
                 d.x = xScale(d.tvalue);
@@ -316,14 +298,14 @@ function PhyloTree(root, canvas, container) {
             });
             canvas.selectAll(".year")
                 .transition().duration(dt)
-                .attr("points", yearPoints);
+                .attr("points", gridLine);
             canvas.selectAll(".yearLabel")
                 .transition().duration(dt)
                 .attr("x", function(d){return d.x1;})
                 .attr("y", function(d){return treeHeight;});
             canvas.selectAll(".month")
                 .transition().duration(dt)
-                .attr("points", yearPoints);
+                .attr("points", gridLine);
         }else{
             nodes.forEach(function (d) {
                 d.x = xScale(d.xvalue);
@@ -388,6 +370,7 @@ function PhyloTree(root, canvas, container) {
         containerWidth = parseInt(container.style("width"), 10);
         treeWidth = containerWidth;
         treeHeight = treePlotHeight(treeWidth);
+        var right_margin = canvas.right_margin;
         d3.select("#canvas")
             .attr("width", treeWidth)
             .attr("height", treeHeight);
@@ -401,10 +384,10 @@ function PhyloTree(root, canvas, container) {
                         maxTextWidth = textWidth;
                     }
                 });
-            right_margin = maxTextWidth + 10;
+            right_margin += maxTextWidth;
         }
-        xScale.range([left_margin, treeWidth - right_margin]);
-        yScale.range([top_margin, treeHeight - bottom_margin]);
+        xScale.range([canvas.left_margin, treeWidth - right_margin]);
+        yScale.range([canvas.top_margin, treeHeight - canvas.bottom_margin]);
     }
 
     /*
@@ -417,8 +400,8 @@ function PhyloTree(root, canvas, container) {
         console.log("rescale xdimensions: ",dMin, dMax);
         xScale.domain([dMin,dMax]);
         yScale.domain([lMin,lMax]);
-        updateGeometry(1500)
-        updateAnnotations();
+        _updateGeometry(1500)
+        _updateAnnotations();
     }
 
     d3.select(window).on('resize', resize);
@@ -426,8 +409,8 @@ function PhyloTree(root, canvas, container) {
     function resize() {
         console.log("resize tree");
         setMargins();
-        updateGeometry(0);
-        updateAnnotations();
+        _updateGeometry(0);
+        _updateAnnotations();
     }
 
     this.resetLayout = function () {
@@ -460,30 +443,19 @@ function PhyloTree(root, canvas, container) {
     if (tip_labels){ addTipLabels();}
     if (branch_labels){ addBranchLabels();}
     setMargins();
-    updateBehavior();
-    updateStyle();
+    _updateBehavior();
+    _updateStyle();
     resize();
 }
 
-
-//d3.json(path + file_prefix + "sequences.json", function(error, json) {
-//  if (error) return console.warn(error);
-//  cladeToSeq=json;
-//});
-
-d3.select("#treefile")
-    .on("change", load_tree);
-
 function load_tree(){
-    filename = document.getElementById("treefile").value;
-    console.log(filename);
     var myTree;
     var oneYear = 365.25*24*60*60*1000; // days*hours*minutes*seconds*milliseconds
     var tw = 2.0;
     d3.json("tree.json", function (error, root){
         if (error) return console.warn(error);
 
-        document.getElementById("timetree").value=false;
+        document.getElementById("timetree").checked=false;
         myTree = new PhyloTree(root, treeplot, d3.select('.treeplot-container'));
 
         d3.select("#reset").on("click", myTree.resetLayout);
@@ -521,20 +493,23 @@ function load_tree(){
 
         function draggedMinFun(start, end){
             setNodeState(start, end);
-            myTree.UpdateStyle();
+            myTree.updateVisibility();
         }
 
         function draggedEndFunc(start, end){
             setNodeState(start, end);
-            myTree.UpdateStyle();
-            myTree.UpdateAnnotations();
+            myTree.updateStyle();
+            myTree.updateAnnotations();
         }
 
         function draggedFunc(start, end){
             setNodeState(start, end);
-            myTree.UpdateStyle();
+            myTree.updateVisibility();
         }
         myDateSlider = new dateSlider(draggedFunc, draggedMinFun, draggedEndFunc);
-        myDateSlider.date_init(myTree.earliestDate, globalDate, tw);
+        myDateSlider.date_init(myTree.earliestDate, myTree.latestDate, tw);
     });
 }
+
+load_tree();
+
