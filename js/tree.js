@@ -74,6 +74,7 @@ function PhyloTree(root, canvas, container) {
     displayRoot = rootNode;
     var tips = gatherTips(rootNode, []);
     this.tips = tips;
+    this.nodes = nodes;
     this.rootNode = rootNode;
 
     canvas.call(virusTooltip);
@@ -173,18 +174,23 @@ function PhyloTree(root, canvas, container) {
             .text(tipLabelText);
     }
 
-    var _colorScale = d3.scale.linear().clamp([true])
+    var continuousColorScale = d3.scale.linear().clamp([true])
         .domain(genericDomain)
         .range(colors);
-    this.colorScale = _colorScale;
+    var currentColorScale; // holds the color scale last used
     /*
      * _update color and stroke styles of tips and links
     */
-    function _updateStyle(){
+    function _updateStyle(colorScale){
         var tmp_col_data = tips.map(function(d){return d.coloring;});
-        var cmin = d3.min(tmp_col_data), cmax = d3.max(tmp_col_data);
-        _colorScale.domain(genericDomain.map(function (d){return cmin + d*(cmax-cmin);}));
-        tips.forEach(function(d){d.col = _colorScale(d.coloring);});
+        if (typeof tmp_col_data[0]=="number" && typeof colorScale == "undefined"){
+            currentColorScale = continuousColorScale;
+            var cmin = d3.min(tmp_col_data), cmax = d3.max(tmp_col_data);
+            currentColorScale.domain(genericDomain.map(function (d){return cmin + d*(cmax-cmin);}));            
+        }else if (typeof colorScale != "undefined"){
+            currentColorScale=colorScale;
+        }
+        tips.forEach(function(d){d.col = currentColorScale(d.coloring);});
 
         canvas.selectAll(".tip")
             .attr("r", tipRadius)

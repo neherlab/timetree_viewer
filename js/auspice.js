@@ -20,6 +20,7 @@ treeplot.right_margin = 10;
 
 function load_tree(){
     var myTree;
+    var cladeToSeq;
     var oneYear = 365.25*24*60*60*1000; // days*hours*minutes*seconds*milliseconds
     var tw = 2.0;
     d3.json("tree.json", function (error, root){
@@ -79,6 +80,44 @@ function load_tree(){
         myDateSlider = new dateSlider(draggedFunc, draggedMinFun, draggedEndFunc);
         myDateSlider.date_init(myTree.earliestDate, myTree.latestDate, tw);
     });
+
+    d3.json("sequences.json", function(error, json) {
+        if (error) return console.warn(error);
+        cladeToSeq=json;
+    });
+
+    function stateAtPosition(clade, gene, pos){
+        if (typeof cladeToSeq[clade][gene][pos] == "undefined"){
+            return cladeToSeq["root"][gene][pos];
+        }else{
+            return cladeToSeq[clade][gene][pos];
+        }
+    }
+    var genotypeColoringEvent;
+    d3.select("#gt-color")
+        .on("keyup", function(){
+            if (typeof genotypeColoringEvent != "undefined"){clearTimeout(genotypeColoringEvent);}
+            genotypeColoringEvent = setTimeout(colorByGenotype, 200);
+        });
+
+    var genotypeColors = ["#60AA9E", "#D9AD3D", "#5097BA", "#E67030", "#8EBC66", "#E59637", "#AABD52", "#DF4327", "#C4B945", "#75B681"];
+    function colorByGenotype() {
+        var pos = parseInt(document.getElementById("gt-color").value)-1;
+        var gene='HA1';
+        var gts = myTree.nodes.map(function (d) {
+            d.coloring = stateAtPosition(d.clade, gene, pos);
+            return d.coloring;});
+
+        var tmp_categories = d3.set(gts).values();
+        var tmp_range = [];
+        for (var ii=0; ii<tmp_categories.length; ii++) 
+            {tmp_range.push(genotypeColors[ii%genotypeColors.length]);}
+        var colorScale = d3.scale.ordinal()
+            .domain(tmp_categories)
+            .range(tmp_range);
+        myTree.updateStyle(colorScale);
+    }
+
 }
 
 load_tree();
