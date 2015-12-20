@@ -23,7 +23,6 @@ var virusTooltip = d3.tip()
 		string += "</div>";
 		return string;
 	});
-treeplot.call(virusTooltip);
 
 
 var linkTooltip = d3.tip()
@@ -60,4 +59,3 @@ var linkTooltip = d3.tip()
 		string += "</div>";
 		return string;
 	});
-treeplot.call(linkTooltip);

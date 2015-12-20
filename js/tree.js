@@ -1,22 +1,5 @@
 console.log('Enter tree.js');
 
-function numDate(date){
-    var oneYear = 365.25*24*60*60*1000; // days*hours*minutes*seconds*milliseconds
-    return 1970 + date.getTime()/oneYear;
-}
-
-function setNodeState(start, end){
-    var numStart = numDate(start), numEnd = numDate(end);
-    tips.forEach(function (d) {
-        if (d._numDate >= numStart && d._numDate < numEnd){
-            d.current  = true;
-        } else{
-            d.current = false;
-        }
-    });
-};
-
-
 function branchLabelText(d) {
     var tmp_str = d.aa_muts.replace(/,/g, ', ');
     if (tmp_str.length>50){
@@ -70,10 +53,6 @@ function branchStrokeColor(d) {return "#BBBBBB";}
 function tipVisibility(d) { return d.current?"visible":"hidden";}
 function branchStrokeWidth(d) {return 3;}
 
-var colorScale = d3.scale.linear().clamp([true])
-    .domain(genericDomain)
-    .range(colors);
-
 function PhyloTree(root, canvas, container) {
     var tree = d3.layout.tree();
     var nodes = tree.nodes(root);
@@ -87,23 +66,48 @@ function PhyloTree(root, canvas, container) {
     var containerWidth = parseInt(container.style("width"), 10);
     var treeWidth = containerWidth;
     var treeHeight = treePlotHeight(treeWidth);
+    var genericDomain = [0,0.111,0.222,0.333, 0.444, 0.555, 0.666, 0.777, 0.888, 1.0];
+    var colors =    ["#4D92BF", "#5AA5A8", "#6BB18D", "#80B974", "#98BD5E", "#B1BD4E",
+                     "#C8B944", "#DAAC3D", "#E59738", "#E67732", "#E14F2A", "#DB2522"];
+
 
     displayRoot = rootNode;
-    tips = gatherTips(rootNode, []);
+    var tips = gatherTips(rootNode, []);
     this.tips = tips;
-    this.rootNode = this.rootNode;
+    this.rootNode = rootNode;
 
+    canvas.call(virusTooltip);
+    canvas.call(linkTooltip);
+
+    function _numDate(date){
+        var oneYear = 365.25*24*60*60*1000; // days*hours*minutes*seconds*milliseconds
+        return 1970 + date.getTime()/oneYear;
+    }
+    this.numDate = _numDate;
     var dateValues = nodes.filter(function(d) {
         return typeof d.date === 'string';
         }).map(function(d) {
             d._calDate = new Date(d.date);
-            d._numDate = numDate(d._calDate);
+            d._numDate = _numDate(d._calDate);
             d.coloring = d._numDate;
         return d._calDate;
     });
     this.earliestDate = new Date(d3.min(dateValues));
     this.latestDate = new Date(d3.max(dateValues));
-    setNodeState(this.earliestDate, this.latestDate);
+
+
+    function _setNodeState(start, end){
+        var numStart = _numDate(start), numEnd = _numDate(end);
+        tips.forEach(function (d) {
+            if (d._numDate >= numStart && d._numDate < numEnd){
+                d.current  = true;
+            } else{
+                d.current = false;
+            }
+        });
+    };
+    this.setNodeState = _setNodeState;
+    this.setNodeState(this.earliestDate, this.latestDate);
 
     function treeSetUp(start, end){
         calcFullTipCounts(rootNode);
@@ -169,14 +173,18 @@ function PhyloTree(root, canvas, container) {
             .text(tipLabelText);
     }
 
+    var _colorScale = d3.scale.linear().clamp([true])
+        .domain(genericDomain)
+        .range(colors);
+    this.colorScale = _colorScale;
     /*
      * _update color and stroke styles of tips and links
     */
     function _updateStyle(){
         var tmp_col_data = tips.map(function(d){return d.coloring;});
         var cmin = d3.min(tmp_col_data), cmax = d3.max(tmp_col_data);
-        colorScale.domain(genericDomain.map(function (d){return cmin + d*(cmax-cmin);}));
-        tips.forEach(function(d){d.col = colorScale(d.coloring);});
+        _colorScale.domain(genericDomain.map(function (d){return cmin + d*(cmax-cmin);}));
+        tips.forEach(function(d){d.col = _colorScale(d.coloring);});
 
         canvas.selectAll(".tip")
             .attr("r", tipRadius)
@@ -447,69 +455,3 @@ function PhyloTree(root, canvas, container) {
     _updateStyle();
     resize();
 }
-
-function load_tree(){
-    var myTree;
-    var oneYear = 365.25*24*60*60*1000; // days*hours*minutes*seconds*milliseconds
-    var tw = 2.0;
-    d3.json("tree.json", function (error, root){
-        if (error) return console.warn(error);
-
-        document.getElementById("timetree").checked=false;
-        myTree = new PhyloTree(root, treeplot, d3.select('.treeplot-container'));
-
-        d3.select("#reset").on("click", myTree.resetLayout);
-        d3.select("#timetree").on("change", function(){
-            var tmp_timetree = document.getElementById("timetree").checked;
-            myTree.toggleTimeTree(tmp_timetree);
-        });
-
-        var mc = autocomplete(document.getElementById('search'))
-            .keys(myTree.tips)
-            .dataField("strain")
-            .placeHolder("search strains...")
-            .width(800)
-            .height(500)
-            .onSelected(onSelect)
-            .render();
-
-        var searchEvent;
-        function onSelect(tip) {
-            var strainName = (tip.strain).replace(/\//g, "");
-            d3.select("#"+strainName)
-                .call(function(d) {
-                    virusTooltip.show(tip, d[0][0]);
-                })
-                .attr("r", function(d){return tipRadius*1.7;})
-                .style("fill", function (d) {
-                  searchEvent = setTimeout(function (){
-                    d3.select("#"+strainName)
-                     .attr("r", function(d){return tipRadius;})
-                     .style("fill", tipFillColor);}, 5000, d);
-                  return d3.rgb(tipFillColor(d)).brighter();
-                });
-        }
-
-
-        function draggedMinFun(start, end){
-            setNodeState(start, end);
-            myTree.updateVisibility();
-        }
-
-        function draggedEndFunc(start, end){
-            setNodeState(start, end);
-            myTree.updateStyle();
-            myTree.updateAnnotations();
-        }
-
-        function draggedFunc(start, end){
-            setNodeState(start, end);
-            myTree.updateVisibility();
-        }
-        myDateSlider = new dateSlider(draggedFunc, draggedMinFun, draggedEndFunc);
-        myDateSlider.date_init(myTree.earliestDate, myTree.latestDate, tw);
-    });
-}
-
-load_tree();
-

@@ -80,37 +80,11 @@
         <script src="js/third_party/d3.tip.js"></script>
         <script src="js/third_party/autocomplete.js"></script>
 
-        <script type="text/javascript">
-
-            var genericDomain = [0,0.111,0.222,0.333, 0.444, 0.555, 0.666, 0.777, 0.888, 1.0];
-            var colors =    ["#4D92BF", "#5AA5A8", "#6BB18D", "#80B974", "#98BD5E", "#B1BD4E",
-                             "#C8B944", "#DAAC3D", "#E59738", "#E67732", "#E14F2A", "#DB2522"];
-
-            var tip_labels = true, branch_labels=false;
-
-            function treePlotHeight(width) {return 400 + 0.30*width;}
-            var containerWidth = parseInt(d3.select(".treeplot-container").style("width"), 10);
-            var treeWidth = containerWidth;
-            var treeHeight = treePlotHeight(treeWidth);
-            var treeplot = d3.select("#treeplot")
-                .attr("width", treeWidth)
-                .attr("height", treeHeight);
-
-            var legend = d3.select("#legend")
-                .attr("width", 280)
-                .attr("height", 100);
-
-            treeplot.left_margin = 10;
-            treeplot.bottom_margin = 16;
-            treeplot.top_margin = 32;
-            if (branch_labels) {treeplot.top_margin +=15;}
-            treeplot.right_margin = 10;
-        </script>
-
         <script src="js/tooltips.js"></script>
         <script src="js/date.js"></script>
         <script src="js/tree_functions.js"></script>
         <script src="js/tree.js"></script>
+        <script src="js/auspice.js"></script>
 
     </div>
 
