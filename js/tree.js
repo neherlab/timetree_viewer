@@ -187,13 +187,13 @@ function PhyloTree(root, canvas, container) {
     function _updateStyle(colorScale){
         var tmp_col_data = tips.map(function(d){return d.coloring;});
         if (typeof tmp_col_data[0]=="number" && typeof colorScale == "undefined"){
-            currentColorScale = continuousColorScale;
+            _currentColorScale = continuousColorScale;
             var cmin = d3.min(tmp_col_data), cmax = d3.max(tmp_col_data);
-            currentColorScale.domain(genericDomain.map(function (d){return cmin + d*(cmax-cmin);}));
+            _currentColorScale.domain(genericDomain.map(function (d){return cmin + d*(cmax-cmin);}));
         }else if (typeof colorScale != "undefined"){
-            currentColorScale=colorScale;
+            _currentColorScale=colorScale;
         }
-        tips.forEach(function(d){d.col = currentColorScale(d.coloring);});
+        tips.forEach(function(d){d.col = _currentColorScale(d.coloring);});
 
         canvas.selectAll(".tip")
             .attr("r", tipRadius)
