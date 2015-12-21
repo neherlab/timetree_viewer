@@ -93,6 +93,8 @@ function PhyloTree(root, canvas, container) {
             d.coloring = d._numDate;
         return d._calDate;
     });
+    tips.forEach(function(d){d._highlight=false; d._selected=false; })
+
     this.earliestDate = new Date(d3.min(dateValues));
     this.latestDate = new Date(d3.max(dateValues));
 
@@ -177,7 +179,8 @@ function PhyloTree(root, canvas, container) {
     var continuousColorScale = d3.scale.linear().clamp([true])
         .domain(genericDomain)
         .range(colors);
-    var currentColorScale; // holds the color scale last used
+    var _currentColorScale= continuousColorScale;
+    this.currentColorScale = _currentColorScale; // holds the color scale last used
     /*
      * _update color and stroke styles of tips and links
     */
@@ -186,7 +189,7 @@ function PhyloTree(root, canvas, container) {
         if (typeof tmp_col_data[0]=="number" && typeof colorScale == "undefined"){
             currentColorScale = continuousColorScale;
             var cmin = d3.min(tmp_col_data), cmax = d3.max(tmp_col_data);
-            currentColorScale.domain(genericDomain.map(function (d){return cmin + d*(cmax-cmin);}));            
+            currentColorScale.domain(genericDomain.map(function (d){return cmin + d*(cmax-cmin);}));
         }else if (typeof colorScale != "undefined"){
             currentColorScale=colorScale;
         }

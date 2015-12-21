@@ -7,7 +7,7 @@ var treeplot = d3.select("#treeplot")
     .attr("width", treeWidth)
     .attr("height", treeHeight);
 
-var legend = d3.select("#legend")
+var legendCanvas = d3.select("#legend")
     .attr("width", 280)
     .attr("height", 100);
 
@@ -20,6 +20,7 @@ treeplot.right_margin = 10;
 
 function load_tree(){
     var myTree;
+    var myLegend;
     var cladeToSeq;
     var oneYear = 365.25*24*60*60*1000; // days*hours*minutes*seconds*milliseconds
     var tw = 2.0;
@@ -79,6 +80,7 @@ function load_tree(){
         }
         myDateSlider = new dateSlider(draggedFunc, draggedMinFun, draggedEndFunc);
         myDateSlider.date_init(myTree.earliestDate, myTree.latestDate, tw);
+        myLegend =  new legend(legendCanvas, myTree.currentColorScale);
     });
 
     d3.json("sequences.json", function(error, json) {
@@ -93,6 +95,19 @@ function load_tree(){
             return cladeToSeq[clade][gene][pos];
         }
     }
+
+    d3.select("#coloring").on("change", function(){
+        var choice = document.getElementById("coloring").value;
+        if (choice=="date"){
+            myTree.nodes.forEach(function (d){d.coloring = d._numDate;});
+        }else if (choice=="ep"){
+            myTree.nodes.forEach(function (d){d.coloring = d.ep;});
+        }
+        myTree.updateStyle();
+        myLegend.remove();
+        myLegend =  new legend(legendCanvas, myTree.currentColorScale);
+    });
+
     var genotypeColoringEvent;
     d3.select("#gt-color")
         .on("keyup", function(){
@@ -102,6 +117,7 @@ function load_tree(){
 
     var genotypeColors = ["#60AA9E", "#D9AD3D", "#5097BA", "#E67030", "#8EBC66", "#E59637", "#AABD52", "#DF4327", "#C4B945", "#75B681"];
     function colorByGenotype() {
+        document.getElementById("coloring").value = 'none';
         var pos = parseInt(document.getElementById("gt-color").value)-1;
         var gene='HA1';
         var gts = myTree.nodes.map(function (d) {
@@ -110,12 +126,14 @@ function load_tree(){
 
         var tmp_categories = d3.set(gts).values();
         var tmp_range = [];
-        for (var ii=0; ii<tmp_categories.length; ii++) 
+        for (var ii=0; ii<tmp_categories.length; ii++)
             {tmp_range.push(genotypeColors[ii%genotypeColors.length]);}
         var colorScale = d3.scale.ordinal()
             .domain(tmp_categories)
             .range(tmp_range);
         myTree.updateStyle(colorScale);
+        myLegend.remove();
+        myLegend =  new legend(legendCanvas, colorScale);
     }
 
 }
