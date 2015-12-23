@@ -24,6 +24,28 @@ function load_tree(){
     var cladeToSeq;
     var oneYear = 365.25*24*60*60*1000; // days*hours*minutes*seconds*milliseconds
     var tw = 2.0;
+ 
+
+    function legend_mouseover(legend_element){
+        var lb = myLegend.lowerBound[legend_element];
+        var ub = myLegend.upperBound[legend_element];
+        if (typeof lb == "number"){
+            myTree.tips.forEach(function (d){d.highlight = (lb<=d.coloring && ub>d.coloring);});
+        }else{
+            myTree.tips.forEach(function (d){d.highlight = legend_element==d.coloring;});
+        }
+        myTree.updateStyle();
+        console.log("Mousover, updated radius " + legend_element +" "+ lb+" "+ub);
+    }
+    function legend_mouseout(){
+        myTree.tips.forEach(function (d){d.highlight = false;});        
+        myTree.updateStyle();
+    };
+
+    function legend_click(legend_element){
+        console.log(legend_element);
+    }
+
     d3.json("tree.json", function (error, root){
         if (error) return console.warn(error);
 
@@ -80,7 +102,7 @@ function load_tree(){
         }
         myDateSlider = new dateSlider(draggedFunc, draggedMinFun, draggedEndFunc);
         myDateSlider.date_init(myTree.earliestDate, myTree.latestDate, tw);
-        myLegend =  new legend(legendCanvas, myTree.currentColorScale);
+        myLegend =  new legend(legendCanvas, myTree.currentColorScale, legend_mouseover, legend_mouseout);
     });
 
     d3.json("sequences.json", function(error, json) {
@@ -105,7 +127,7 @@ function load_tree(){
         }
         myTree.updateStyle();
         myLegend.remove();
-        myLegend =  new legend(legendCanvas, myTree.currentColorScale);
+        myLegend =  new legend(legendCanvas, myTree.currentColorScale, legend_mouseover, legend_mouseout, legend_click);
     });
 
     var genotypeColoringEvent;
@@ -133,7 +155,7 @@ function load_tree(){
             .range(tmp_range);
         myTree.updateStyle(colorScale);
         myLegend.remove();
-        myLegend =  new legend(legendCanvas, colorScale);
+        myLegend =  new legend(legendCanvas, colorScale, legend_mouseover, legend_mouseout, legend_click);
     }
 
 }
