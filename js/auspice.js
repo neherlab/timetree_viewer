@@ -24,7 +24,7 @@ function load_tree(){
     var cladeToSeq;
     var oneYear = 365.25*24*60*60*1000; // days*hours*minutes*seconds*milliseconds
     var tw = 2.0;
- 
+
 
     function legend_mouseover(legend_element){
         var lb = myLegend.lowerBound[legend_element];
@@ -38,7 +38,7 @@ function load_tree(){
         console.log("Mousover, updated radius " + legend_element +" "+ lb+" "+ub);
     }
     function legend_mouseout(){
-        myTree.tips.forEach(function (d){d.highlight = false;});        
+        myTree.tips.forEach(function (d){d.highlight = false;});
         myTree.updateStyle();
     };
 
@@ -46,7 +46,7 @@ function load_tree(){
         console.log(legend_element);
     }
 
-    d3.json("tree.json", function (error, root){
+    d3.json(file_prefix + "tree.json", function (error, root){
         if (error) return console.warn(error);
 
         document.getElementById("timetree").checked=false;
@@ -102,12 +102,9 @@ function load_tree(){
         }
         myDateSlider = new dateSlider(draggedFunc, draggedMinFun, draggedEndFunc);
         myDateSlider.date_init(myTree.earliestDate, myTree.latestDate, tw);
-        myLegend =  new legend(legendCanvas, myTree.currentColorScale, legend_mouseover, legend_mouseout);
-    });
-
-    d3.json("sequences.json", function(error, json) {
-        if (error) return console.warn(error);
-        cladeToSeq=json;
+        var label_fmt = function(d) {return (Math.round(d*100)*0.01).toString().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
+        myLegend =  new legend(legendCanvas, myTree.currentColorScale, label_fmt,
+                               legend_mouseover, legend_mouseout);
     });
 
     function stateAtPosition(clade, gene, pos){
@@ -118,16 +115,28 @@ function load_tree(){
         }
     }
 
+    d3.json(file_prefix + "sequences.json", function(error, json) {
+        if (error) return console.warn(error);
+        cladeToSeq=json;
+        var seq= "ATGAAGACTATCATTGCTTTGAGCTACATTCTATGTCTGGTTATCGCTCAAAAACTTCCTGGAAATGACAATAGCACGGCAACGCTGTGCCTTGGGCACCATGCAGTACCAAACGGAACGATAGTGAAAACAATCACGAATGACCGAATTGAAGTTACTAATGCTACTGAACTGGTTCAGAATTCCTCAATAGGTGAAATATGCGACAGTCCTCATCAGATCCTTGATGGAGAAAACTGCACACTAATAGATGCTCTATTGGGAGACCCTCAGTGTGATGGCTTTCAAAATAAGAAATGGGACCTTTTTGTTGAACGAAGCAAAGCCCACAGCAACTGTTACCCTTATGATGTGCCGGATTATGCCTCCCTTAGATCACTAGTTGCCTCATCCGGCACACTGGAGTTTAACAATGAAAGCTTCAATTGGGCTGGAGTCACTCAAAACGGAACAAGTTCTTCTTGCATAAGGGGATCTAATAGTAGTTTCTTTAGTAGATTAAATTGGTTGACCCACTTAAACTCCAAATACCCAGCATTAAACGTGACTATGCCAAACAATGAACAATTTGACAAATTGTACATTTGGGGGGTTCACCACCCGGGTACGGACAAGGACCAAATCTTCCTGTATGCACAATCATCAGGAAGAATCACAGTATCTACCAAAAGAAGCCAACAAGCTGTAATCCCGAATATCGGATCTAGACCCAGAATAAGGGATATCCCTAGCAGAATAAGCATCTATTGGGCAATAGTAAAACCGGGAGACATACTTTTGATTAATAGCACAGGGAATCTAATTGCTCCTAGGGGTTACTTCAAAATACGAAGTGGGAAAAGCTCAATAATGAGATCAGATGCACCCATTGGCAAATGCAAGTCTGAATGCATCACTCCAAATGGAAGCATTCCCAATGACAAACCATTCCAAAATGTAAACAGGATCACATACGGGGCCTGTCCCAGATATGTTAAGCAAAGCACTCTGAAATTGGCAACAGGAATGCGAAATGTACCAGAGAAACAAACTAGAGGCATATTTGGCGCAATAGCGGGTTTCATAGAAAATGGTTGGGAGGGAATGGTGGATGGTTGGTACGGCTTCAGGCATCAAAATTCTGAGGGAAGAGGACAAGCAGCAGATCTCAAAAGCACTCAAGCAGCAATCGATCAAATCAATGGGAAGCTGAATCGATTGATCGGGAAAACCAACGAGAAATTCCATCAGATTGAAAAAGAATTCTCAGAAGTAGAAGGGAGAATTCAGGACCTTGAGAAATATGTTGAGGACACAAAAATAGATCTCTGGTCATACAACGCGGAGCTTCTTGTTGCCCTGGAGAACCAACATACAATTGATCTAACTGACTCAGAAATGAACAAACTGTTTGAAAAAACAAAGAAGCAGCTGAGAGAAAATGCTGAGGATATGGGCAATGGTTGTTTCAAAATATACCACAAATGTGACAATGCCTGCATAGGATCAATCAGAAATGGAACTTATGACCACGATGTATACAGGGATGAAGCATTAAACAACCGGTTCCAGGTCAAGGGAGTTGAGCTGAAGTCAGGGTACAAAGATTGGATCCTATGGATTTCCTTTGCCATATCATGTTTTTTGCTTTGTGTTGCTTTGTTGGGGTTCATCATGTGGGCCTGCCAAAAGGGCAACATTAGGTGCAACATTTGCATTTGA";
+        var searchClades = myTree.tips.map(function (d){return d.clade;});
+        locateSequence("hello", seq, cladeToSeq['root']['nuc'], searchClades);
+        //alignToRoot("TCTCAGTACTTGATC", "TCTCAGATACTTATC");
+    });
+
     d3.select("#coloring").on("change", function(){
         var choice = document.getElementById("coloring").value;
         if (choice=="date"){
             myTree.nodes.forEach(function (d){d.coloring = d._numDate;});
+            var label_fmt = function(d) {return (Math.round(d*100)*0.01).toString().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
         }else if (choice=="ep"){
             myTree.nodes.forEach(function (d){d.coloring = d.ep;});
+            var label_fmt = function(d) {return (Math.round(d)).toString().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
         }
         myTree.updateStyle();
         myLegend.remove();
-        myLegend =  new legend(legendCanvas, myTree.currentColorScale, legend_mouseover, legend_mouseout, legend_click);
+        myLegend =  new legend(legendCanvas, myTree.currentColorScale, label_fmt,
+                                legend_mouseover, legend_mouseout, legend_click);
     });
 
     var genotypeColoringEvent;
@@ -155,8 +164,62 @@ function load_tree(){
             .range(tmp_range);
         myTree.updateStyle(colorScale);
         myLegend.remove();
-        myLegend =  new legend(legendCanvas, colorScale, legend_mouseover, legend_mouseout, legend_click);
+        var label_fmt = function(d) {return d.toString().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
+        myLegend =  new legend(legendCanvas, colorScale, label_fmt,
+                                legend_mouseover, legend_mouseout, legend_click);
+
     }
+
+    function locateSequence(name, seq, rootSeq, clades){
+        var olap_start, olap_end, tmp;
+        console.log('Provided sequence: '+ name +': ' + seq.substring(0,20)+'....');
+        tmp = alignPairwise(seq, rootSeq);
+        var gapStripped = tmp[0].filter(function(d,i){return tmp[1][i]!='-';});
+        var mutations = {};
+        var alignedNucs = 0;
+        for (var pos=0; pos<gapStripped.length; pos++){
+            if (gapStripped[pos]!='-'){
+                alignedNucs++;
+                if (gapStripped[pos]!=rootSeq[pos]){
+                    mutations[pos]=gapStripped[pos];
+                }
+            }
+        }
+        console.log("aligned nucs: "+alignedNucs+ " mutations: ", mutations);
+        if (alignedNucs>0.9*rootSeq.length){
+            var bestClade = findClosestClade(mutations, clades);
+            return bestClade;
+        }else{
+            return;
+        }
+    }
+
+    function findClosestClade(mutations, searchClades){
+        var bestClade=-1, bestScore=0;
+        var tmpScore=0;
+
+        for (ci=0; ci<searchClades.length; ci++){
+            clade = searchClades[ci];
+            tmpScore=0;
+            for (mut in mutations){
+                if (stateAtPosition(clade, 'nuc', mut)==mutations[mut]){
+                    tmpScore++;
+                }
+            }
+            if (clade!="root") {
+                tmpScore -= 0.5*Object.keys(cladeToSeq[clade]['nuc']).length;
+            }
+            if (tmpScore>bestScore){
+                bestScore=tmpScore;
+                bestClade=clade;
+            }
+        }
+        console.log("best match:",bestClade);
+        return bestClade;
+    }
+
+
+
 
 }
 

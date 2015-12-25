@@ -58,6 +58,7 @@ function PhyloTree(root, canvas, container) {
     var tree = d3.layout.tree();
     var nodes = tree.nodes(root);
     var links = tree.links(nodes);
+    links.push({"source":root, "target":root});
     var tree_legend;
     var timetree=false;
     var xValues, yValues, currentXValues, xScale, yScale;

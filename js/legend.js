@@ -1,6 +1,6 @@
 var legendRectSize = 15;
 var legendSpacing = 4;
-function legend(canvas, cScale, mouseover_func, mouseout_func, click_func){
+function legend(canvas, cScale, label_fmt_func, mouseover_func, mouseout_func, click_func){
 
     var _lowerBound = {}; _upperBound = {};
     function setUp(){
@@ -13,9 +13,6 @@ function legend(canvas, cScale, mouseover_func, mouseout_func, click_func){
             _lowerBound[cScale.domain()[i]]=cScale.domain()[i-1];
             _upperBound[cScale.domain()[i]]=cScale.domain()[i];
         }
-
-        //if (typeof click_func == "undefined"){console.log("Click function undefined"); var click_func = function(){};}
-        //if (typeof mouseover_func == "undefined"){console.log("Mouse over function undefined"); var mouseover_func = function(){};}
 
         var tmp_leg = canvas.selectAll(".legend")
             .data(cScale.domain())
@@ -48,10 +45,7 @@ function legend(canvas, cScale, mouseover_func, mouseout_func, click_func){
         tmp_leg.append('text')
             .attr('x', legendRectSize + legendSpacing + 5)
             .attr('y', legendRectSize - legendSpacing)
-            .text(function(d) {
-                var label = d.toString().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');
-                return label;
-            })
+            .text(label_fmt_func)
             .on('mouseover', mouseover_func)
             .on('mouseout', mouseout_func)
             .on('click', click_func);
