@@ -103,7 +103,7 @@ function load_tree(){
         }
         myDateSlider = new dateSlider(draggedFunc, draggedMinFun, draggedEndFunc);
         myDateSlider.date_init(myTree.earliestDate, myTree.latestDate, tw);
-        var label_fmt = function(d) {return (Math.round(d*100)*0.01).toString().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
+        var label_fmt = function(d) {return d.toFixed(2).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
         myLegend =  new legend(legendCanvas, myTree.currentColorScale, label_fmt,
                                legend_mouseover, legend_mouseout);
     });
@@ -119,21 +119,19 @@ function load_tree(){
     d3.json(file_prefix + "sequences.json", function(error, json) {
         if (error) return console.warn(error);
         cladeToSeq=json;
-        var seq= "ATGAAGACTATCATTGCTTTGAGCTACATTCTATGTCTGGTTATCGCTCAAAAACTTCCTGGAAATGACAATAGCACGGCAACGCTGTGCCTTGGGCACCATGCAGTACCAAACGGAACGATAGTGAAAACAATCACGAATGACCGAATTGAAGTTACTAATGCTACTGAACTGGTTCAGAATTCCTCAATAGGTGAAATATGCGACAGTCCTCATCAGATCCTTGATGGAGAAAACTGCACACTAATAGATGCTCTATTGGGAGACCCTCAGTGTGATGGCTTTCAAAATAAGAAATGGGACCTTTTTGTTGAACGAAGCAAAGCCCACAGCAACTGTTACCCTTATGATGTGCCGGATTATGCCTCCCTTAGATCACTAGTTGCCTCATCCGGCACACTGGAGTTTAACAATGAAAGCTTCAATTGGGCTGGAGTCACTCAAAACGGAACAAGTTCTTCTTGCATAAGGGGATCTAATAGTAGTTTCTTTAGTAGATTAAATTGGTTGACCCACTTAAACTCCAAATACCCAGCATTAAACGTGACTATGCCAAACAATGAACAATTTGACAAATTGTACATTTGGGGGGTTCACCACCCGGGTACGGACAAGGACCAAATCTTCCTGTATGCACAATCATCAGGAAGAATCACAGTATCTACCAAAAGAAGCCAACAAGCTGTAATCCCGAATATCGGATCTAGACCCAGAATAAGGGATATCCCTAGCAGAATAAGCATCTATTGGGCAATAGTAAAACCGGGAGACATACTTTTGATTAATAGCACAGGGAATCTAATTGCTCCTAGGGGTTACTTCAAAATACGAAGTGGGAAAAGCTCAATAATGAGATCAGATGCACCCATTGGCAAATGCAAGTCTGAATGCATCACTCCAAATGGAAGCATTCCCAATGACAAACCATTCCAAAATGTAAACAGGATCACATACGGGGCCTGTCCCAGATATGTTAAGCAAAGCACTCTGAAATTGGCAACAGGAATGCGAAATGTACCAGAGAAACAAACTAGAGGCATATTTGGCGCAATAGCGGGTTTCATAGAAAATGGTTGGGAGGGAATGGTGGATGGTTGGTACGGCTTCAGGCATCAAAATTCTGAGGGAAGAGGACAAGCAGCAGATCTCAAAAGCACTCAAGCAGCAATCGATCAAATCAATGGGAAGCTGAATCGATTGATCGGGAAAACCAACGAGAAATTCCATCAGATTGAAAAAGAATTCTCAGAAGTAGAAGGGAGAATTCAGGACCTTGAGAAATATGTTGAGGACACAAAAATAGATCTCTGGTCATACAACGCGGAGCTTCTTGTTGCCCTGGAGAACCAACATACAATTGATCTAACTGACTCAGAAATGAACAAACTGTTTGAAAAAACAAAGAAGCAGCTGAGAGAAAATGCTGAGGATATGGGCAATGGTTGTTTCAAAATATACCACAAATGTGACAATGCCTGCATAGGATCAATCAGAAATGGAACTTATGACCACGATGTATACAGGGATGAAGCATTAAACAACCGGTTCCAGGTCAAGGGAGTTGAGCTGAAGTCAGGGTACAAAGATTGGATCCTATGGATTTCCTTTGCCATATCATGTTTTTTGCTTTGTGTTGCTTTGTTGGGGTTCATCATGTGGGCCTGCCAAAAGGGCAACATTAGGTGCAACATTTGCATTTGA";
         var searchClades = myTree.tips.map(function (d){return d.clade;});
         myTreeSearch = new TreeSearch(stateAtPosition, myTree.tips.map(function(d){return d.clade;}),
                                         cladeToSeq['root']['nuc'], seqSearchResult);
-        //alignToRoot("TCTCAGTACTTGATC", "TCTCAGATACTTATC");
     });
 
     d3.select("#coloring").on("change", function(){
         var choice = document.getElementById("coloring").value;
         if (choice=="date"){
             myTree.nodes.forEach(function (d){d.coloring = d._numDate;});
-            var label_fmt = function(d) {return (Math.round(d*100)*0.01).toString().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
+            var label_fmt = function(d) {return d.toFixed(2).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
         }else if (choice=="ep"){
             myTree.nodes.forEach(function (d){d.coloring = d.ep;});
-            var label_fmt = function(d) {return (Math.round(d)).toString().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
+            var label_fmt = function(d) {return d.toFixed(0).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
         }
         myTree.updateStyle();
         myLegend.remove();

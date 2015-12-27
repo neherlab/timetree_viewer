@@ -48,7 +48,7 @@ function tipLabelSize(d, n) {
 function tipLabelWidth(d, n){return tipLabelText(d).length * tipLabelSize(d, n) * 0.5;}
 function tipFillColor(d)    {return d3.rgb(d.col).brighter([0.65]);}
 function tipStrokeColor(d)  {return d.col;}
-function tipRadius(d)  {return d.highlight?8.0:4.0;}
+function tipRadius(d)  {return d.highlight?6.0:4.0;}
 //function tipRadius(d)  {return 4.0;}
 function branchStrokeColor(d) {return "#BBBBBB";}
 function tipVisibility(d) { return d.current?"visible":"hidden";}
