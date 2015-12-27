@@ -48,7 +48,7 @@ function tipLabelSize(d, n) {
 function tipLabelWidth(d, n){return tipLabelText(d).length * tipLabelSize(d, n) * 0.5;}
 function tipFillColor(d)    {return d3.rgb(d.col).brighter([0.65]);}
 function tipStrokeColor(d)  {return d.col;}
-function tipRadius(d)  {return d.highlight?6.0:4.0;}
+function tipRadius(d)  {return d.highlight?8.0:4.0;}
 //function tipRadius(d)  {return 4.0;}
 function branchStrokeColor(d) {return "#BBBBBB";}
 function tipVisibility(d) { return d.current?"visible":"hidden";}
@@ -98,7 +98,7 @@ function PhyloTree(root, canvas, container) {
     tips.forEach(function(d){d._highlight=false; d._selected=false; })
 
     this.earliestDate = new Date(d3.min(dateValues));
-    this.latestDate = new Date(d3.max(dateValues));
+    this.latestDate = new Date(d3.max(dateValues).getTime() + 24*3600*1000);
 
 
     function _setNodeState(start, end){
@@ -350,7 +350,12 @@ function PhyloTree(root, canvas, container) {
             .transition().duration(dt)
             .attr("x", function(d) {  return d.x - 6;})
             .attr("y", function(d) {  return d.y - 3;});
+        canvas.selectAll(".searchResult")
+            .transition().duration(dt)
+            .attr("x", function(d) {  return d.x - 6;})
+            .attr("y", function(d) {  return d.y - 3;});
     }
+    this.updateGeometry = _updateGeometry;
 
     /*
      * zoom into the tree upon click onto a branch

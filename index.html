@@ -61,7 +61,10 @@
                         <div class="bigspacer"></div>
                         <div id="search"></div>
                         <div class="bigspacer"></div>
+                        <textarea id="seqinput" class="form-control" placeholder="search sequences... (plain or fasta)"></textarea>
+                        <div class="bigspacer"></div>
                         <div>
+                            <button id="searchinputclear" class="btn btn-default">clear</button>
                             <button id="reset" class="btn btn-default">reset layout</button>
                         </div>
                         <div class="bigspacer"></div>
@@ -80,7 +83,7 @@
             <div class="col-md-9">
                 <hr>
                 <div class="center text-gray smallnote">
-                    &copy; 2015 Pavel Sagulenko and Richard Neher
+                    &copy; 2015 Pavel Sagulenko, Trevor Bedford, and Richard Neher
                 </div>
             </div>
         </div>
@@ -96,7 +99,8 @@
         <script src="js/third_party/autocomplete.js"></script>
         <script type="text/javascript">var file_prefix="";</script>
         <script src="js/legend.js"></script>
-        <script src="js/search_in_tree.js"></script>
+        <script src="js/alignPairwise.js"></script>
+        <script src="js/locate_viruses.js"></script>
         <script src="js/tooltips.js"></script>
         <script src="js/date.js"></script>
         <script src="js/tree_functions.js"></script>

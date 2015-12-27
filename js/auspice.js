@@ -20,6 +20,7 @@ treeplot.right_margin = 10;
 
 function load_tree(){
     var myTree;
+    var myTreeSearch;
     var myLegend;
     var cladeToSeq;
     var oneYear = 365.25*24*60*60*1000; // days*hours*minutes*seconds*milliseconds
@@ -120,7 +121,8 @@ function load_tree(){
         cladeToSeq=json;
         var seq= "ATGAAGACTATCATTGCTTTGAGCTACATTCTATGTCTGGTTATCGCTCAAAAACTTCCTGGAAATGACAATAGCACGGCAACGCTGTGCCTTGGGCACCATGCAGTACCAAACGGAACGATAGTGAAAACAATCACGAATGACCGAATTGAAGTTACTAATGCTACTGAACTGGTTCAGAATTCCTCAATAGGTGAAATATGCGACAGTCCTCATCAGATCCTTGATGGAGAAAACTGCACACTAATAGATGCTCTATTGGGAGACCCTCAGTGTGATGGCTTTCAAAATAAGAAATGGGACCTTTTTGTTGAACGAAGCAAAGCCCACAGCAACTGTTACCCTTATGATGTGCCGGATTATGCCTCCCTTAGATCACTAGTTGCCTCATCCGGCACACTGGAGTTTAACAATGAAAGCTTCAATTGGGCTGGAGTCACTCAAAACGGAACAAGTTCTTCTTGCATAAGGGGATCTAATAGTAGTTTCTTTAGTAGATTAAATTGGTTGACCCACTTAAACTCCAAATACCCAGCATTAAACGTGACTATGCCAAACAATGAACAATTTGACAAATTGTACATTTGGGGGGTTCACCACCCGGGTACGGACAAGGACCAAATCTTCCTGTATGCACAATCATCAGGAAGAATCACAGTATCTACCAAAAGAAGCCAACAAGCTGTAATCCCGAATATCGGATCTAGACCCAGAATAAGGGATATCCCTAGCAGAATAAGCATCTATTGGGCAATAGTAAAACCGGGAGACATACTTTTGATTAATAGCACAGGGAATCTAATTGCTCCTAGGGGTTACTTCAAAATACGAAGTGGGAAAAGCTCAATAATGAGATCAGATGCACCCATTGGCAAATGCAAGTCTGAATGCATCACTCCAAATGGAAGCATTCCCAATGACAAACCATTCCAAAATGTAAACAGGATCACATACGGGGCCTGTCCCAGATATGTTAAGCAAAGCACTCTGAAATTGGCAACAGGAATGCGAAATGTACCAGAGAAACAAACTAGAGGCATATTTGGCGCAATAGCGGGTTTCATAGAAAATGGTTGGGAGGGAATGGTGGATGGTTGGTACGGCTTCAGGCATCAAAATTCTGAGGGAAGAGGACAAGCAGCAGATCTCAAAAGCACTCAAGCAGCAATCGATCAAATCAATGGGAAGCTGAATCGATTGATCGGGAAAACCAACGAGAAATTCCATCAGATTGAAAAAGAATTCTCAGAAGTAGAAGGGAGAATTCAGGACCTTGAGAAATATGTTGAGGACACAAAAATAGATCTCTGGTCATACAACGCGGAGCTTCTTGTTGCCCTGGAGAACCAACATACAATTGATCTAACTGACTCAGAAATGAACAAACTGTTTGAAAAAACAAAGAAGCAGCTGAGAGAAAATGCTGAGGATATGGGCAATGGTTGTTTCAAAATATACCACAAATGTGACAATGCCTGCATAGGATCAATCAGAAATGGAACTTATGACCACGATGTATACAGGGATGAAGCATTAAACAACCGGTTCCAGGTCAAGGGAGTTGAGCTGAAGTCAGGGTACAAAGATTGGATCCTATGGATTTCCTTTGCCATATCATGTTTTTTGCTTTGTGTTGCTTTGTTGGGGTTCATCATGTGGGCCTGCCAAAAGGGCAACATTAGGTGCAACATTTGCATTTGA";
         var searchClades = myTree.tips.map(function (d){return d.clade;});
-        locateSequence("hello", seq, cladeToSeq['root']['nuc'], searchClades);
+        myTreeSearch = new TreeSearch(stateAtPosition, myTree.tips.map(function(d){return d.clade;}),
+                                        cladeToSeq['root']['nuc'], seqSearchResult);
         //alignToRoot("TCTCAGTACTTGATC", "TCTCAGATACTTATC");
     });
 
@@ -169,57 +171,54 @@ function load_tree(){
                                 legend_mouseover, legend_mouseout, legend_click);
 
     }
-
-    function locateSequence(name, seq, rootSeq, clades){
-        var olap_start, olap_end, tmp;
-        console.log('Provided sequence: '+ name +': ' + seq.substring(0,20)+'....');
-        tmp = alignPairwise(seq, rootSeq);
-        var gapStripped = tmp[0].filter(function(d,i){return tmp[1][i]!='-';});
-        var mutations = {};
-        var alignedNucs = 0;
-        for (var pos=0; pos<gapStripped.length; pos++){
-            if (gapStripped[pos]!='-'){
-                alignedNucs++;
-                if (gapStripped[pos]!=rootSeq[pos]){
-                    mutations[pos]=gapStripped[pos];
-                }
-            }
-        }
-        console.log("aligned nucs: "+alignedNucs+ " mutations: ", mutations);
-        if (alignedNucs>0.9*rootSeq.length){
-            var bestClade = findClosestClade(mutations, clades);
-            return bestClade;
-        }else{
-            return;
-        }
+    // callback to highlight the result of a search by strain name
+    var searchEvent;
+    function highlightStrainSearch(tip) {
+        var strainName = (tip.strain).replace(/\//g, "");
+        d3.select("#"+strainName)
+            .call(function(d) {
+                markInTreeStrainSearch(tip);
+                virusTooltip.show(tip, d[0][0]);
+            });
     }
 
-    function findClosestClade(mutations, searchClades){
-        var bestClade=-1, bestScore=0;
-        var tmpScore=0;
+    var strainSearchEvent;
+    d3.select('#seqinput').on('keyup', function(){
+        if (typeof strainSearchEvent != "undefined"){clearTimeout(strainSearchEvent);}
+        var lines = document.getElementById('seqinput').value.split('\n');
+        strainSearchEvent = setTimeout(function (d) {myTreeSearch.parseSequences(lines);}, 500);
+    });
 
-        for (ci=0; ci<searchClades.length; ci++){
-            clade = searchClades[ci];
-            tmpScore=0;
-            for (mut in mutations){
-                if (stateAtPosition(clade, 'nuc', mut)==mutations[mut]){
-                    tmpScore++;
-                }
-            }
-            if (clade!="root") {
-                tmpScore -= 0.5*Object.keys(cladeToSeq[clade]['nuc']).length;
-            }
-            if (tmpScore>bestScore){
-                bestScore=tmpScore;
-                bestClade=clade;
-            }
-        }
-        console.log("best match:",bestClade);
-        return bestClade;
+    function seqSearchResult(clades){
+        var nodesToHighlight = myTree.nodes.filter(function (d){
+        var tmp=0;
+        for (var clade in clades){tmp+= (d.clade==clade);}
+            return tmp>0;});
+        console.log(clades, nodesToHighlight);
+        markSearchResult(nodesToHighlight);
     }
 
+    // highlight clades in tree
+    function markSearchResult(nodesToHighlight){
+        treeplot.selectAll(".searchResult").data(nodesToHighlight)
+            .enter()
+            .append('text')
+            .attr("class", "searchResult")
+            .attr('text-anchor', 'middle')
+            .attr('dominant-baseline', 'central')
+            .style("font-size", "24px")
+            .text(function(d) {return '\uf069'; })
+            .on('mouseover', function(d) {virusTooltip.show(d, this);})
+            .on('mouseout', virusTooltip.hide);
+        myTree.updateStyle();
+        myTree.updateGeometry(0.0);
+    }
 
-
+    d3.select('#searchinputclear').on('click', function (){
+    treeplot.selectAll('.searchResult').data([]).exit().remove();
+    document.getElementById('seqinput').value = "";
+    virusTooltip.hide();
+    });
 
 }
 
