@@ -23,6 +23,7 @@ function load_tree(){
     var myTreeSearch;
     var myLegend;
     var cladeToSeq;
+    var myDivChart;
     var oneYear = 365.25*24*60*60*1000; // days*hours*minutes*seconds*milliseconds
     var tw = 2.0;
 
@@ -150,7 +151,7 @@ function load_tree(){
     function colorByGenotype() {
         document.getElementById("coloring").value = 'none';
         var pos = parseInt(document.getElementById("gt-color").value)-1;
-        var gene='HA1';
+        var gene='nuc';
         var gts = myTree.nodes.map(function (d) {
             d.coloring = stateAtPosition(d.clade, gene, pos);
             return d.coloring;});
@@ -216,6 +217,12 @@ function load_tree(){
     treeplot.selectAll('.searchResult').data([]).exit().remove();
     document.getElementById('seqinput').value = "";
     virusTooltip.hide();
+    });
+
+    function diversityCallback(d){console.log(d);}
+
+    d3.json("entropy.json", function(error, S){
+        myDivChart = new diversityChart(d3.select('.entropy-container'), '#entropy', {'nuc':S['nuc']}, diversityCallback)
     });
 
 }
