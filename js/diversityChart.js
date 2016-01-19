@@ -1,7 +1,7 @@
 function diversityChart(container, parent_div, entropy, callback){
     width = parseInt(container.style("width"), 10);
     height = 250;
-    console.log(width, height);
+    console.log("diversity chart dimensions:", width, height);
 
     function generate(){
         var chart_data = {};
@@ -22,11 +22,12 @@ function diversityChart(container, parent_div, entropy, callback){
         }
         for (gene in entropy){
             chart_data[gene]=entropy[gene]['val'];
-            xmax = d3.max(chart_data[gene])>xmax?chart_data[gene]:xmax;
             chart_data['x'+gene]=entropy[gene]['pos'];
+            xmax = d3.max(chart_data['x'+gene])>xmax?d3.max(chart_data['x'+gene]):xmax;
             chart_types[gene]='bar';
             chart_xaxis[gene]='x'+gene;
         }
+        console.log(chart_data);
 
         var entropy_chart = c3.generate({
             bindto: parent_div,
@@ -34,6 +35,7 @@ function diversityChart(container, parent_div, entropy, callback){
             onresize: function() {
                 width = parseInt(container.style("width"), 10);
                 height = 250;
+                console.log("diversity chart dimensions:", width, height);
                 entropy_chart.resize({height: height, width: width});
             },
             legend: {show: false},
@@ -48,7 +50,7 @@ function diversityChart(container, parent_div, entropy, callback){
                         values: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6],
                         outer: false
                     },
-                    min:-0.8,
+                    min:-0.08,
                 },
                 x: {
                     label: {
@@ -57,9 +59,10 @@ function diversityChart(container, parent_div, entropy, callback){
                     },
                     tick: {
                         outer: false,
-                        values: ([1,2,3,4,5]).map(function (d){
+                        values: ([0,1,2,3,4,5,6]).map(function (d){
                             var dec = Math.pow(10,Math.floor(Math.log10(xmax/5)))
                             var step = dec*Math.floor(xmax/5/dec);
+                            console.log('tick',d*step);
                             return d*step;
                         })
                     }
@@ -78,7 +81,8 @@ function diversityChart(container, parent_div, entropy, callback){
                 },
                 labels:{
                     format:function (v, id, i, j){
-                        if ((typeof id !="undefined")&&(id.substring(id.length-4)=='anno')&&(i==1)) {
+                        //console.log(v, id, i);
+                        if ((typeof id !="undefined")&&(id.substring(id.length-4)=='anno')) {
                             return id.substring(0,id.length-4);
                         }else{return '';}
                     }
@@ -101,6 +105,14 @@ function diversityChart(container, parent_div, entropy, callback){
                     }
                 }
             },
+            labels:{
+                format:function (v, id, i, j){
+                    if ((typeof id !="undefined")&&(id.substring(id.length-4)=='anno')&&(i==1)){
+                        return id.substring(0,id.length-4);
+                    }else{return '';}
+                }
+            },
+
         });
     }
     generate();

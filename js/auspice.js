@@ -152,6 +152,10 @@ function load_tree(){
         document.getElementById("coloring").value = 'none';
         var pos = parseInt(document.getElementById("gt-color").value)-1;
         var gene='nuc';
+        colorByPosition(pos, gene);
+    };
+
+    function colorByPosition(pos, gene){
         var gts = myTree.nodes.map(function (d) {
             d.coloring = stateAtPosition(d.clade, gene, pos);
             return d.coloring;});
@@ -219,7 +223,10 @@ function load_tree(){
     virusTooltip.hide();
     });
 
-    function diversityCallback(d){console.log(d);}
+    function diversityCallback(d){
+        console.log(d);
+        colorByPosition(d.index, d.name);
+    }
 
     d3.json("entropy.json", function(error, S){
         myDivChart = new diversityChart(d3.select('.entropy-container'), '#entropy', {'nuc':S['nuc']}, diversityCallback)
