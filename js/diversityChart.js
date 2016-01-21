@@ -11,8 +11,9 @@ function diversityChart(container, parent_div, entropy, callback){
         var xmax = 0;
         var anno_count= 0
         for (x in entropy){
-            chart_data['x'+x+'anno'] = [entropy[x]['pos'][0], entropy[x]['pos'][entropy[x]['pos'].length-1]];
-            chart_data[x+'anno'] = [anno_count%3, anno_count%3].map(function (d) {return -0.1*(d+1);});
+            start = entropy[x]['pos'][0]; end = entropy[x]['pos'][entropy[x]['pos'].length-1];
+            chart_data['x'+x+'anno'] = [start, 0.5*(start+end), end];
+            chart_data[x+'anno'] = [anno_count%3, anno_count%3, anno_count%3].map(function (d) {return -0.1*(d+1);});
             anno_count+=1;
             if (ymin>chart_data[x+'anno'][0]){
                 ymin = chart_data[x+'anno'][0];
@@ -28,6 +29,7 @@ function diversityChart(container, parent_div, entropy, callback){
             chart_xaxis[gene]='x'+gene;
         }
         console.log(chart_data);
+        ymin-=0.1;
 
         var entropy_chart = c3.generate({
             bindto: parent_div,
@@ -50,7 +52,7 @@ function diversityChart(container, parent_div, entropy, callback){
                         values: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6],
                         outer: false
                     },
-                    min:-0.08,
+                    min:ymin,
                 },
                 x: {
                     label: {
@@ -82,7 +84,7 @@ function diversityChart(container, parent_div, entropy, callback){
                 labels:{
                     format:function (v, id, i, j){
                         //console.log(v, id, i);
-                        if ((typeof id !="undefined")&&(id.substring(id.length-4)=='anno')) {
+                        if ((typeof id !="undefined")&&(id.substring(id.length-4)=='anno')&&(i==1)) {
                             return id.substring(0,id.length-4);
                         }else{return '';}
                     }

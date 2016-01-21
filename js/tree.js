@@ -98,7 +98,7 @@ function PhyloTree(root, canvas, container) {
     tips.forEach(function(d){d._highlight=false; d._selected=false; })
 
     this.earliestDate = new Date(d3.min(dateValues));
-    this.latestDate = new Date(d3.max(dateValues).getTime() + 24*3600*1000);
+    this.latestDate = d3.min([new Date(d3.max(dateValues).getTime() + 24*3600*1000), new Date()]);
 
 
     function _setNodeState(start, end){
@@ -259,16 +259,18 @@ function PhyloTree(root, canvas, container) {
     function drawGrid(){
         var maxy = yScale.domain[1], miny=yScale.domain[0];
         var maxt = d3.max(tValues), mint = d3.min(tValues);
-        var tRoot = tips[0].num_date-tips[0].tvalue;
+        var tRoot = tips[0]._numDate-tips[0].tvalue;
         console.log("Setting up date grid starting: ",tRoot);
         function DatetoTotValue(x){
             return x-tRoot;
         }
-        for (var yi=Math.floor(mint+tRoot); yi<Math.ceil(maxt+tRoot+0.1); yi++){
+        for (var yi=Math.floor(mint+tRoot); yi<Math.ceil(maxt+tRoot+0.1); yi+=1+Math.floor((maxt-mint)/10)){
             yearTicks.push({'year':yi, "T1":DatetoTotValue(yi), "c1":miny, "T2":DatetoTotValue(yi),"c2":maxy});
-            for (var mi=1; mi<12; mi++){
-                monthTicks.push({'year':yi,"month":mi, "T1":DatetoTotValue(yi+mi/12.0), "c1":miny,
-                                "T2":DatetoTotValue(yi+mi/12.0),"c2":maxy});
+            if (maxt-mint<8){
+                for (var mi=1; mi<12; mi++){
+                    monthTicks.push({'year':yi,"month":mi, "T1":DatetoTotValue(yi+mi/12.0), "c1":miny,
+                                    "T2":DatetoTotValue(yi+mi/12.0),"c2":maxy});
+                }
             }
         }
         console.log(yearTicks);

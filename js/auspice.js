@@ -25,7 +25,7 @@ function load_tree(){
     var cladeToSeq;
     var myDivChart;
     var oneYear = 365.25*24*60*60*1000; // days*hours*minutes*seconds*milliseconds
-    var tw = 2.0;
+    var tw = 10.0;
 
 
     function legend_mouseover(legend_element){
@@ -104,7 +104,7 @@ function load_tree(){
         }
         myDateSlider = new dateSlider(draggedFunc, draggedMinFun, draggedEndFunc);
         myDateSlider.date_init(myTree.earliestDate, myTree.latestDate, tw);
-        var label_fmt = function(d) {return d.toFixed(2).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
+        var label_fmt = function(d) {return d.toFixed(2).replace(/([10-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
         myLegend =  new legend(legendCanvas, myTree.currentColorScale, label_fmt,
                                legend_mouseover, legend_mouseout);
     });
@@ -229,7 +229,10 @@ function load_tree(){
     }
 
     d3.json("entropy.json", function(error, S){
-        myDivChart = new diversityChart(d3.select('.entropy-container'), '#entropy', {'nuc':S['nuc']}, diversityCallback)
+        myDivChart = new diversityChart(d3.select('.entropy-container'), '#entropy',
+//                {'p17':S['p17'],'p24':S['p24'], 'p7':S['p7'], 'p6':S['p6']},
+                {'PR':S['PR'],'RT':S['RT'], 'p15':S['p15'], 'IN':S['IN']},
+                diversityCallback)
     });
 
 }
