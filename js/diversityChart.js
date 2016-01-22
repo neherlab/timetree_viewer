@@ -101,7 +101,7 @@ function diversityChart(container, parent_div, entropy, callback){
             },
             tooltip: {
                 format: {
-                    title: function (d) {return d;},
+                    title: function (d) {return "";},
                     value: function (value, ratio, id) {
                         return id.substring(id.length-4)=='anno'?"start/stop":"Variability: "+value;
                     }
