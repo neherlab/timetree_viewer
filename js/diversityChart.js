@@ -7,6 +7,7 @@ function diversityChart(container, parent_div, entropy, callback){
         var chart_data = {};
         var chart_types = {};
         var chart_xaxis = {};
+        var posToAA = {};
         var ymin = 0;
         var xmax = 0;
         var anno_count= 0
@@ -24,11 +25,17 @@ function diversityChart(container, parent_div, entropy, callback){
         for (gene in entropy){
             chart_data[gene]=entropy[gene]['val'];
             chart_data['x'+gene]=entropy[gene]['pos'];
+            for (var ii=0; ii<entropy[gene]['pos'].length; ii++){
+                if (typeof posToAA[entropy[gene]['pos'][ii]]=="undefined"){
+                    posToAA[entropy[gene]['pos'][ii]] = [[gene, entropy[gene]['codon'][ii]]];
+                }else{
+                    posToAA[entropy[gene]['pos'][ii]].push([gene,entropy[gene]['codon'][ii]]);
+                }
+            }
             xmax = d3.max(chart_data['x'+gene])>xmax?d3.max(chart_data['x'+gene]):xmax;
             chart_types[gene]='bar';
             chart_xaxis[gene]='x'+gene;
         }
-        console.log(chart_data);
         ymin-=0.1;
 
         var entropy_chart = c3.generate({
@@ -101,7 +108,7 @@ function diversityChart(container, parent_div, entropy, callback){
             },
             tooltip: {
                 format: {
-                    title: function (d) {return "";},
+                    title: function (d) {return posToAA[d][0][0]+" "+(posToAA[d][0][1]+1);},
                     value: function (value, ratio, id) {
                         return id.substring(id.length-4)=='anno'?"start/stop":"Variability: "+value;
                     }
