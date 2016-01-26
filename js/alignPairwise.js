@@ -21,14 +21,14 @@ function alignPairwise(seq1, seq2){
     }
 
     // perform a number of seed matches to determine te rough alignment of seq1 rel to seq2
-    var nSeeds = 5, seedLength = 10;
+    var nSeeds = 5, seedLength = 12;
     var seedMatches = [];
     var tmp,tmpShift, tmpScore, qPos;
     for (var ni=0; ni<nSeeds; ni++){
         qPos = Math.round(seq1.length/nSeeds)*ni;
         tmp = seedMatch(seq1.substring(qPos, qPos+seedLength));
         tmpShift=tmp[0]; tmpScore=tmp[1];
-        if (tmpScore>=0.8*seedLength){
+        if (tmpScore>=0.7*seedLength){
             seedMatches.push([qPos, tmpShift, tmpShift - qPos, tmpScore]);
         }
     }
