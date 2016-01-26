@@ -36,7 +36,7 @@ var linkTooltip = d3.tip()
 		}
 		string += "<div class=\"smallspacer\"></div>";
 		string += "<div class=\"smallnote\">";
-		if (false) {//((typeof d.aa_muts !="undefined")&&(mutType=='aa')){
+		if ((typeof d.aa_muts !="undefined")&&(mutType=='aa')){
 			var ncount = 0;
 			for (tmp_gene in d.aa_muts) {ncount+=d.aa_muts[tmp_gene].length;}
 			if (ncount) {string += "<b>Mutations:</b><ul>";}
@@ -46,7 +46,7 @@ var linkTooltip = d3.tip()
 				}
 			}
 		}
-		else if (true){ //((typeof d.nuc_muts !="undefined")&&(mutType=='nuc')&&(d.nuc_muts.length)){
+		else if ((typeof d.nuc_muts !="undefined")&&(mutType=='nuc')&&(d.nuc_muts.length)){
 			var tmp_muts = d.muts.split(',');
 			var nmuts = tmp_muts.length;
 			tmp_muts = tmp_muts.slice(0,Math.min(10, nmuts))

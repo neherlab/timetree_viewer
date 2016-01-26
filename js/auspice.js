@@ -11,6 +11,8 @@ var legendCanvas = d3.select("#legend")
     .attr("width", 280)
     .attr("height", 100);
 
+var mutType='aa'; //mutations displayed in tooltip
+
 treeplot.left_margin = 10;
 treeplot.bottom_margin = 16;
 treeplot.top_margin = 32;
@@ -228,11 +230,13 @@ function load_tree(){
         colorByPosition(d.index, d.name);
     }
 
-    d3.json("entropy.json", function(error, S){
+    d3.json(file_prefix+"entropy.json", function(error, S){
+        var chart_data = {};
+        for (var ii=0; ii<proteins.length; ii++){
+            chart_data[proteins[ii]] = S[proteins[ii]]
+        }
         myDivChart = new diversityChart(d3.select('.entropy-container'), '#entropy',
-//                {'p17':S['p17'],'p24':S['p24'], 'p7':S['p7'], 'p6':S['p6']},
-                {'PR':S['PR'],'RT':S['RT'], 'p15':S['p15'], 'IN':S['IN']},
-                diversityCallback)
+                                        chart_data, diversityCallback)
     });
 
 }
