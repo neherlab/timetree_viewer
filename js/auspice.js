@@ -129,9 +129,11 @@ function load_tree(){
         var choice = document.getElementById("coloring").value;
         if (choice=="date"){
             myTree.nodes.forEach(function (d){d.coloring = d._numDate;});
+            d3.select("#legend-title").html(function(d){return "Collection date";});
             var label_fmt = function(d) {return d.toFixed(2).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
         }else if (choice=="ep"){
             myTree.nodes.forEach(function (d){d.coloring = d.ep;});
+            d3.select("#legend-title").html(function(d){return "Epitope mutations";});
             var label_fmt = function(d) {return d.toFixed(0).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
         }
         myTree.updateStyle();
@@ -150,8 +152,14 @@ function load_tree(){
     var genotypeColors = ["#60AA9E", "#D9AD3D", "#5097BA", "#E67030", "#8EBC66", "#E59637", "#AABD52", "#DF4327", "#C4B945", "#75B681"];
     function colorByGenotype() {
         document.getElementById("coloring").value = 'none';
-        var pos = parseInt(document.getElementById("gt-color").value)-1;
-        var gene='nuc';
+        var user_input = document.getElementById("gt-color").value.split(':')
+        if (user_input.length==1){
+            var pos = parseInt(user_input[0])-1;
+            var gene='nuc';
+        }else{
+            var pos = parseInt(user_input[1])-1;
+            var gene=user_input[0];
+        }
         colorByPosition(pos, gene);
     };
 
@@ -170,6 +178,7 @@ function load_tree(){
         myTree.updateStyle(colorScale);
         myLegend.remove();
         var label_fmt = function(d) {return d.toString().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
+        d3.select("#legend-title").html(function(d){return "State at " + gene+' '+(pos+1);});
         myLegend =  new legend(legendCanvas, colorScale, label_fmt,
                                 legend_mouseover, legend_mouseout, legend_click);
 
@@ -230,8 +239,9 @@ function load_tree(){
 
     d3.json("entropy.json", function(error, S){
         myDivChart = new diversityChart(d3.select('.entropy-container'), '#entropy',
+                  {'cds':S['cds']},
 //                {'p17':S['p17'],'p24':S['p24'], 'p7':S['p7'], 'p6':S['p6']},
-                {'PR':S['PR'],'RT':S['RT'], 'p15':S['p15'], 'IN':S['IN']},
+//                {'PR':S['PR'],'RT':S['RT'], 'p15':S['p15'], 'IN':S['IN']},
                 diversityCallback)
     });
 
