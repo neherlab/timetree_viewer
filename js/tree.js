@@ -50,7 +50,7 @@ function tipFillColor(d)    {return d3.rgb(d.col).brighter([0.65]);}
 function tipStrokeColor(d)  {return d.col;}
 function tipRadius(d)  {return d.highlight?6.0:4.0;}
 //function tipRadius(d)  {return 4.0;}
-function branchStrokeColor(d) {return "#BBBBBB";}
+function branchStrokeColor(d) {return d.col;}
 function tipVisibility(d) { return d.current?"visible":"hidden";}
 function branchStrokeWidth(d) {return 3;}
 
@@ -186,7 +186,7 @@ function PhyloTree(root, canvas, container) {
     /*
      * _update color and stroke styles of tips and links
     */
-    function _updateStyle(colorScale){
+    function _updateStyle(colorScale, branchColor="#BBBBBB"){
         var tmp_col_data = tips.map(function(d){return d.coloring;});
         if (typeof tmp_col_data[0]=="number" && typeof colorScale == "undefined"){
             _currentColorScale = continuousColorScale;
@@ -196,6 +196,14 @@ function PhyloTree(root, canvas, container) {
             _currentColorScale=colorScale;
         }
         tips.forEach(function(d){d.col = _currentColorScale(d.coloring);});
+        if (branchColor=="same"){
+            links.forEach(function(d){var tmp_col = _currentColorScale(d.target.coloring);
+                                      var modCol = d3.interpolateRgb(tmp_col, "#BBB")(0.6);
+                                      d.col = d3.rgb(modCol).toString();
+            });
+        }else{
+            links.forEach(function(d){d.col = branchColor;});
+        }
 
         canvas.selectAll(".tip")
             .attr("r", tipRadius)
