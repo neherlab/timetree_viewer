@@ -4,7 +4,6 @@ function alignPairwise(seq1, seq2){
         var tmpScore = 0;
         var maxScore = 0;
         var maxShift = -1;
-        console.log(kmer);
         for(var shift=0; shift<seq2.length-kmer.length;shift++){
             tmpScore=0;
             for (var pos=0; pos<kmer.length; pos++){
@@ -17,11 +16,14 @@ function alignPairwise(seq1, seq2){
                 maxShift=shift;
             }
         }
+        console.log(kmer, seq2.substring(maxShift, maxShift+kmer.length), maxShift, maxScore);
         return [maxShift, maxScore];
     }
 
+    console.log(seq1);
+    console.log(seq2);
     // perform a number of seed matches to determine te rough alignment of seq1 rel to seq2
-    var nSeeds = 5, seedLength = 12;
+    var nSeeds = 5, seedLength = 21;
     var seedMatches = [];
     var tmp,tmpShift, tmpScore, qPos;
     for (var ni=0; ni<nSeeds; ni++){
@@ -32,12 +34,12 @@ function alignPairwise(seq1, seq2){
             seedMatches.push([qPos, tmpShift, tmpShift - qPos, tmpScore]);
         }
     }
-
     // given the seed matches, determine the maximal and minimal shifts
     var minShift = d3.min(seedMatches.map(function (d){return d[2];}))
     var maxShift = d3.max(seedMatches.map(function (d){return d[2];}))
     var bandWidth = 3*(maxShift-minShift) + 9;
     var meanShift = Math.round(0.5*(minShift+maxShift));
+    console.log(seedMatches, bandWidth, meanShift);
 
     // allocate a matrix to record the matches
     var rowLength = Math.ceil((seq2.length + 1 + bandWidth*2));
