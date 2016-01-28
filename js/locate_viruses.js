@@ -72,8 +72,8 @@ function TreeSearch(sequenceLookUp, cladeIds, rootSeq, callBack){
                 }
             }
         }
-        console.log("aligned nucs: "+alignedNucs+ " mutations: ", mutations);
-        if (alignedNucs>0.9*rootSeq.length){
+        console.log("aligned nucs: "+alignedNucs+ ". mutations: ", mutations);
+        if (alignedNucs>0.9*seq.length){
             var bestClade = findClosestClade(mutations);
             return bestClade;
         }else{
