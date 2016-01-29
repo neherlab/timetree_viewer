@@ -177,7 +177,7 @@ function load_tree(){
         var colorScale = d3.scale.ordinal()
             .domain(tmp_categories)
             .range(tmp_range);
-        myTree.updateStyle(colorScale);
+        myTree.updateStyle(colorScale, branchColor="same");
         myLegend.remove();
         var label_fmt = function(d) {return d.toString().replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
         d3.select("#legend-title").html(function(d){return "State at " + gene+' '+(pos+1);});
