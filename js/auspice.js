@@ -248,6 +248,17 @@ function load_tree(){
                                         chart_data, diversityCallback)
     });
 
+    d3.json("entropy.json", function(error, S){
+        console.log(error);
+        var chart_data = {};
+        for (var ii=0; ii<proteins.length; ii++){
+            chart_data[proteins[ii]] = S[proteins[ii]]
+        }
+        myDivChart = new diversityChart(d3.select('.entropy-container'), '#entropy',
+                                        chart_data, diversityCallback)
+    });
+
+
 }
 
 load_tree();
