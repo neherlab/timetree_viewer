@@ -133,10 +133,6 @@ function load_tree(){
             myTree.nodes.forEach(function (d){d.coloring = d._numDate;});
             d3.select("#legend-title").html(function(d){return "Collection date";});
             var label_fmt = function(d) {return d.toFixed(2).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
-        }else if (choice=="ep"){
-            myTree.nodes.forEach(function (d){d.coloring = d.ep;});
-            d3.select("#legend-title").html(function(d){return "Epitope mutations";});
-            var label_fmt = function(d) {return d.toFixed(0).replace(/([a-z])([A-Z])/g, '$1 $2').replace(/,/g, ', ');}
         }
         myTree.updateStyle();
         myLegend.remove();
