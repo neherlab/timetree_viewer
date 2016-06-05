@@ -69,7 +69,7 @@ function diversityChart(container, parent_div, entropy, callback){
                     tick: {
                         outer: false,
                         values: ([0,1,2,3,4,5,6]).map(function (d){
-                            var dec = Math.pow(10,Math.floor(Math.log10(xmax/5)))
+                            var dec = Math.pow(10,Math.floor(Math.log(xmax/5) / Math.LN10));
                             var step = dec*Math.floor(xmax/5/dec);
                             console.log('tick',d*step);
                             return d*step;

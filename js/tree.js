@@ -188,7 +188,8 @@ function PhyloTree(root, canvas, container) {
     /*
      * _update color and stroke styles of tips and links
     */
-    function _updateStyle(colorScale, branchColor="#BBBBBB"){
+    function _updateStyle(colorScale, branchColor){
+        if (typeof branchColor=="undefined"){branchColor="#BBBBBB";}
         var tmp_col_data = tips.map(function(d){return d.coloring;});
         if (typeof tmp_col_data[0]=="number" && typeof colorScale == "undefined"){
             _currentColorScale = continuousColorScale;
