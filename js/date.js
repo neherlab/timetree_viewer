@@ -36,7 +36,8 @@ function dateSlider(draggedFunc, draggedMinFunc, dragEndFunc){
 			dragend();
 		});
 
-
+	this.start = function(){return sliderStart;};
+	this.end = function (){return sliderEnd;};
 
 	function dragged(d) {
 

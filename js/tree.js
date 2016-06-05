@@ -46,9 +46,10 @@ function tipLabelSize(d, n) {
 }
 
 function tipLabelWidth(d, n){return tipLabelText(d).length * tipLabelSize(d, n) * 0.5;}
-function tipFillColor(d)    {return d3.rgb(d.col).brighter([0.65]);}
-function tipStrokeColor(d)  {return d.col;}
-function tipRadius(d)  {return d.highlight?6.0:4.0;}
+function tipFillColor(d)    {return d._selected?d3.rgb(d.col).brighter([0.45]):d3.rgb(d.col).brighter([0.65]);}
+function tipStrokeColor(d)  {return d._selected?"#222222":d.col;}
+function tipStrokeWidth(d)  {return d._selected?2:1;}
+function tipRadius(d)  {return (d._highlight||d._selected)?6.0:4.0;}
 //function tipRadius(d)  {return 4.0;}
 function branchStrokeColor(d) {return d.col;}
 function tipVisibility(d) { return d.current?"visible":"hidden";}
@@ -69,6 +70,7 @@ function PhyloTree(root, canvas, container) {
     var treeWidth = containerWidth;
     var treeHeight = treePlotHeight(treeWidth);
     var genericDomain = [0,0.111,0.222,0.333, 0.444, 0.555, 0.666, 0.777, 0.888, 1.0];
+    this.zero_one = genericDomain;
     var colors =    ["#4D92BF", "#5AA5A8", "#6BB18D", "#80B974", "#98BD5E", "#B1BD4E",
                      "#C8B944", "#DAAC3D", "#E59738", "#E67732", "#E14F2A", "#DB2522"];
 
@@ -207,6 +209,7 @@ function PhyloTree(root, canvas, container) {
 
         canvas.selectAll(".tip")
             .attr("r", tipRadius)
+            .style("stroke-width", tipStrokeWidth)
             .style("visibility", tipVisibility)
             .style("fill", tipFillColor)
             .style("stroke", tipStrokeColor);

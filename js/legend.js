@@ -1,7 +1,10 @@
 var legendRectSize = 15;
 var legendSpacing = 4;
-function legend(canvas, cScale, label_fmt_func, mouseover_func, mouseout_func, click_func){
-
+function legend(canvas, cScale, label_fmt_func, mouseover_func, mouseout_func, click_func, stack){
+    if (typeof stack=="undefined"){
+        stack = 5;
+    }
+    console.log(stack);
     var _lowerBound = {}; _upperBound = {};
     function setUp(){
         console.log("setting up legend " + cScale.domain());
@@ -19,7 +22,6 @@ function legend(canvas, cScale, label_fmt_func, mouseover_func, mouseout_func, c
             .enter().append('g')
             .attr('class', 'legend')
             .attr('transform', function(d, i) {
-                var stack = 5;
                 var height = legendRectSize + legendSpacing;
                 var fromRight = Math.floor(i / stack);
                 var fromTop = i % stack;
