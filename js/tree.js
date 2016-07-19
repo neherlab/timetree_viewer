@@ -52,7 +52,7 @@ function tipStrokeWidth(d)  {return d._selected?2:1;}
 function tipRadius(d)  {return (d._highlight||d._selected)?6.0:4.0;}
 //function tipRadius(d)  {return 4.0;}
 function branchStrokeColor(d) {return d.col;}
-function tipVisibility(d) { return d.current?"visible":"hidden";}
+function tipVisibility(d) { return (d.current&d._valid)?"visible":"hidden";}
 function branchStrokeWidth(d) {return 3;}
 
 function PhyloTree(root, canvas, container) {
@@ -97,7 +97,11 @@ function PhyloTree(root, canvas, container) {
             d.coloring = d._numDate;
         return d._calDate;
     });
-    tips.forEach(function(d){d._highlight=false; d._selected=false; })
+    tips.forEach(function(d){d._highlight=false; d._selected=false;d._valid=true;})
+    var sera = tips.filter(function(d){return d.serum;});
+    if (sera.length>0){
+        focusNode = 'undefined';
+    }
 
     this.earliestDate = new Date(d3.min(dateValues));
     this.latestDate = d3.min([new Date(d3.max(dateValues).getTime() + 24*3600*1000), new Date()]);
@@ -260,7 +264,7 @@ function PhyloTree(root, canvas, container) {
                 virusTooltip.show(d, this);
             })
             .on('mouseout', virusTooltip.hide);
-    }
+        }
 
 
     var yearTicks = [], monthTicks=[];
@@ -359,6 +363,10 @@ function PhyloTree(root, canvas, container) {
             .transition().duration(dt)
             .attr("x", function(d) { return d.x+10; })
             .attr("y", function(d) { return d.y+4; });
+        canvas.selectAll(".tipDeco")
+            .transition().duration(dt)
+            .attr("x", function(d) { return d.x; })
+            .attr("y", function(d) { return d.y; });
 
         canvas.selectAll(".branchLabel")
             .transition().duration(dt)
@@ -480,6 +488,7 @@ function PhyloTree(root, canvas, container) {
     this.yScale=yScale;
     if (tip_labels){ addTipLabels();}
     if (branch_labels){ addBranchLabels();}
+    //if (decorations){ addTipDecoration(); }
     setMargins();
     _updateBehavior();
     _updateStyle();
