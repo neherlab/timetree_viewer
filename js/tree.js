@@ -90,10 +90,10 @@ function PhyloTree(root, canvas, container) {
     }
     this.numDate = _numDate;
     var dateValues = nodes.filter(function(d) {
-        return typeof d.date === 'string';
+        return typeof d.attr["date"] === 'string';
         }).map(function(d) {
-            d._calDate = new Date(d.date);
-            d._numDate = _numDate(d._calDate);
+            d._calDate = new Date(d.attr["date"]);
+            d._numDate = d.attr["num_date"];
             d.coloring = d._numDate;
         return d._calDate;
     });
